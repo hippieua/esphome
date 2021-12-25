@@ -10,6 +10,10 @@ esphome:
     name: "hippie.T4EU1C"
     version: "1.0.0"
 
+dashboard_import:
+  package_import_url: github://hippieua/esphome/blob/main/esphome-project-template/T4EU1C.yaml
+
+
 wifi:
   networks:
   - ssid: !secret wifi_ssid_1
