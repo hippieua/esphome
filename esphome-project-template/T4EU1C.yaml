@@ -1,0 +1,81 @@
+substitutions:
+  node_name: t4eu1c-sw1
+
+esphome:
+  name: ${node_name}
+  platform: ESP8266
+  board: esp8285
+  esp8266_restore_from_flash: True
+  project:
+    name: "hippie.T4EU1C"
+    version: "1.0.0"
+
+wifi:
+  networks:
+  - ssid: !secret wifi_ssid_1
+    password: !secret wifi_password_1
+    priority: 2
+  - ssid: !secret wifi_ssid_2
+    password: !secret wifi_ssid_2
+    priority: 1
+  reboot_timeout: 300s
+  ap:
+    ssid: ${node_name}_AP
+
+logger:
+api:
+ota:
+  password: !secret ota_password
+
+web_server:
+
+binary_sensor:
+  - platform: gpio 
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: ${node_name} Button
+    on_multi_click:
+    - timing:
+        - ON for at least 0.5s
+      then:
+        - switch.toggle: virtual_relay
+    - timing:
+        - ON for at most 0.5s
+      then:
+        - switch.toggle: relay
+
+switch:
+  - platform: gpio 
+    name: ${node_name} Relay
+    icon: mdi:lightbulb
+    pin: GPIO12
+    id: relay
+    on_turn_on:
+      - light.turn_off: signal_led
+    on_turn_off:
+      - light.turn_on: signal_led
+
+  - platform: template
+    name: ${node_name} V Relay
+    id: virtual_relay
+    optimistic: true
+
+  - platform: restart
+    name: ${node_name} Restart
+
+  - platform: safe_mode
+    name: ${node_name} Restart Safe Mode
+
+output:
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: true
+
+light:
+  - platform: monochromatic
+    name: ${node_name} Blue LED
+    output: blue_led
+    id: signal_led
